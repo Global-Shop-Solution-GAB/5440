@@ -1,0 +1,679 @@
+Program.Sub.ScreenSU.Start
+Gui.FormWOSOResch..Create
+Gui.FormWOSOResch..Size(15360,10695)
+Gui.FormWOSOResch..MinX(0)
+Gui.FormWOSOResch..MinY(0)
+Gui.FormWOSOResch..Position(0,0)
+Gui.FormWOSOResch..BackColor(-2147483633)
+Gui.FormWOSOResch..MousePointer(0)
+Gui.FormWOSOResch..Event(UnLoad,FormWOSOResch_UnLoad)
+Gui.FormWOSOResch..Caption("Work Order and Sales Order Differences")
+Gui.FormWOSOResch.txt1.Create(TextBox,"0 - No Issues",True,1455,195,0,12000,30,True,0,"Arial",8,9498256,0)
+Gui.FormWOSOResch.txt1.Locked(True)
+Gui.FormWOSOResch.txt1.Anchor(9)
+Gui.FormWOSOResch.txt2.Create(TextBox,"1 - No WO",True,1455,195,0,12000,240,True,0,"Arial",8,16777215,0)
+Gui.FormWOSOResch.txt2.Locked(True)
+Gui.FormWOSOResch.txt2.Anchor(9)
+Gui.FormWOSOResch.txt3.Create(TextBox,"2 - Part Mismatch",True,1455,195,0,12000,450,True,0,"Arial",8,65535,0)
+Gui.FormWOSOResch.txt3.Locked(True)
+Gui.FormWOSOResch.txt3.Anchor(9)
+Gui.FormWOSOResch.txt4.Create(TextBox,"3 - Date Mismatch",True,1455,195,0,13650,30,True,0,"Arial",8,14524637,0)
+Gui.FormWOSOResch.txt4.Locked(True)
+Gui.FormWOSOResch.txt4.Anchor(9)
+Gui.FormWOSOResch.txt5.Create(TextBox,"4 - Qty Mismatch",True,1455,195,0,13650,240,True,0,"Arial",8,12695295,0)
+Gui.FormWOSOResch.txt5.Locked(True)
+Gui.FormWOSOResch.txt5.Anchor(9)
+Gui.FormWOSOResch.txt6.Create(TextBox,"5 - Multiple Issues",True,1455,195,0,13650,450,True,0,"Arial",8,255,0)
+Gui.FormWOSOResch.txt6.Locked(True)
+Gui.FormWOSOResch.txt6.Anchor(9)
+Gui.FormWOSOResch.GsGridControlWOSO.Create(GsGridControl)
+Gui.FormWOSOResch.GsGridControlWOSO.Size(15000,9030)
+Gui.FormWOSOResch.GsGridControlWOSO.Position(105,765)
+Gui.FormWOSOResch.GsGridControlWOSO.Anchor(15)
+Gui.FormWOSOResch.GsGridControlWOSO.Event(RowCellClick,GsGridControlWOSO_RowCellClick)
+Gui.FormWOSOResch.cmdRefresh.Create(Button)
+Gui.FormWOSOResch.cmdRefresh.Size(855,375)
+Gui.FormWOSOResch.cmdRefresh.Position(11040,270)
+Gui.FormWOSOResch.cmdRefresh.Anchor(9)
+Gui.FormWOSOResch.cmdRefresh.Caption("REFRESH")
+Gui.FormWOSOResch.cmdRefresh.Event(Click,cmdRefresh_Click)
+Gui.FormWOSOResch.cmdUpDate.Create(Button)
+Gui.FormWOSOResch.cmdUpDate.Size(1695,495)
+Gui.FormWOSOResch.cmdUpDate.Position(105,9900)
+Gui.FormWOSOResch.cmdUpDate.Anchor(6)
+Gui.FormWOSOResch.cmdUpDate.Caption("Update WO(s)")
+Gui.FormWOSOResch.cmdUpDate.Event(Click,cmdUpDate_Click)
+Program.Sub.ScreenSU.End
+
+Program.Sub.Preflight.Start
+Program.Sub.Preflight.End
+
+Program.Sub.Main.Start
+F.Intrinsic.Control.Try
+	V.Local.sError.Declare(String,"")
+	V.Local.sLocal.Declare(String,"")
+	V.Local.sFile.Declare(String,"")
+	V.Local.sDate.Declare(String,"")
+	V.Local.bRet.Declare(Boolean,False)
+
+	F.Intrinsic.Control.SelectCase(V.Caller.Hook)
+		F.Intrinsic.Control.Case(17240)
+			F.Intrinsic.String.Format(V.Ambient.Date,"MMDDYY",V.Local.sDate)
+			
+			F.Intrinsic.Control.If(V.Caller.LocalGSSTempDir.Right1,=,"\")
+				V.Local.sLocal.Set(V.Caller.LocalGSSTempDir)
+			F.Intrinsic.Control.Else
+				F.Intrinsic.String.Build("{0}\",V.Caller.LocalGSSTempDir,V.Local.sLocal)
+			F.Intrinsic.Control.EndIf
+			F.Intrinsic.String.Build("{0}WO_5440-{1}.txt",V.Local.sLocal,V.Local.sDate,V.Local.sFile)
+			
+			V.Passed.Global.Set(" ")
+			
+			F.Intrinsic.File.Exists(V.Local.sFile,V.Local.bRet)
+			F.Intrinsic.Control.If(V.Local.bRet)
+				F.Intrinsic.File.File2String(V.Local.sFile,V.Local.sLocal)
+				F.Intrinsic.File.DeleteFile(V.Local.sFile)
+				V.Passed.Global.Set(V.Local.sLocal)
+				F.Intrinsic.String.Split(V.Local.sLocal,"!*!",V.Local.sLocal)
+				
+				V.Passed.000013.Set(V.Local.sLocal(0).Trim)
+				
+			F.Intrinsic.Control.EndIf
+			
+		F.Intrinsic.Control.Case(17270)
+			F.Intrinsic.Control.If(V.Passed.Global.Trim,<>,"")
+				F.Intrinsic.String.Split(V.Passed.Global,"!*!",V.Local.sLocal)
+				
+				V.Passed.000011.Set(V.Local.sLocal(1))
+				V.Passed.000012.Set(V.Local.sLocal(2))
+			F.Intrinsic.Control.EndIf
+			
+		F.Intrinsic.Control.CaseElse
+			F.Intrinsic.Control.CallSub(Build_Empty_DT)
+			F.Intrinsic.Control.CallSub(Set_Properties)
+			F.Intrinsic.Control.CallSub(Get_Data)
+			Gui.FormWOSOResch..Show
+			
+	F.Intrinsic.Control.EndSelect
+	
+	F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+		F.Intrinsic.String.Build("Project: {0}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}","GCG_5440_WOSO_Resheduling.g2u",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+		F.Intrinsic.UI.Msgbox(V.Local.sError)
+		F.Intrinsic.Control.CallSub(FormWOSOResch_UnLoad)
+	F.Intrinsic.Control.EndIf
+Function.Intrinsic.Control.EndTry
+Program.Sub.Main.End
+
+Program.Sub.FormWOSOResch_UnLoad.Start
+F.Intrinsic.Control.Try
+	V.Local.sError.Declare(String,"")
+
+	F.Intrinsic.Control.End
+	
+	F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+		F.Intrinsic.String.Build("Project: {0}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}","GCG_5440_WOSO_Resheduling.g2u",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+		F.Intrinsic.UI.Msgbox(V.Local.sError)
+		F.Intrinsic.Control.End
+	F.Intrinsic.Control.EndIf
+Function.Intrinsic.Control.EndTry
+Program.Sub.FormWOSOResch_UnLoad.End
+
+Program.Sub.cmdUpDate_Click.Start
+F.Intrinsic.Control.Try
+	V.Local.sError.Declare(String,"")
+	V.Local.sLocal.Declare(String,"")
+	V.Local.sDueDate.Declare(String,"")
+	V.Local.sFile.Declare(String,"")
+	V.Local.sRet.Declare(String,"")
+	V.Local.sData.Declare(String,"")
+	V.Local.sFilter.Declare(String,"")
+	V.Local.sQty.Declare(String,"")
+	V.Local.sDate.Declare(String,"")
+	V.Local.i.Declare(Long,0)
+	V.Local.bRet.Declare(boolean,True)
+	V.Local.sSql.Declare(String,"")
+	
+	Gui.FormWOSOResch..Enabled(False)
+	
+	F.Intrinsic.String.Format(V.Ambient.Date,"MMDDYY",V.Local.sDate)
+	
+	F.Intrinsic.Control.If(V.Caller.LocalGSSTempDir.Right1,=,"\")
+		V.Local.sLocal.Set(V.Caller.LocalGSSTempDir)
+	F.Intrinsic.Control.Else
+		F.Intrinsic.String.Build("{0}\",V.Caller.LocalGSSTempDir,V.Local.sLocal)
+	F.Intrinsic.Control.EndIf
+	F.Intrinsic.String.Build("{0}WO_5440-{1}.txt",V.Local.sLocal,V.Local.sDate,V.Local.sFile)
+	
+	F.Data.DataView.Create("WOSO","Sched",22,"Check_Box = True","")
+	
+	F.Intrinsic.Control.For(V.Local.i,0,V.DataView.WOSO!Sched.RowCount--,1)
+		F.Intrinsic.String.Format(V.DataView.WOSO!Sched(V.Local.i).SODueDate!FieldVal,"MM/DD/YYYY",V.Local.sDueDate)
+		F.Intrinsic.Control.If(V.DataView.WOSO!Sched(V.Local.i).Work_Order!FieldValTrim,=,"")
+			F.Intrinsic.String.Build("{0}*!*{1}*!*{2}*!*{3}*!*{4}*!* *!* *!*{5}*!*{6}",V.DataView.WOSO!Sched(V.Local.i).SOPart!FieldValTrim,"","",V.Local.sDueDate,V.DataView.WOSO!Sched(V.Local.i).SOQty!FieldVal,V.DataView.WOSO!Sched(V.Local.i).SO!FieldValTrim,V.DataView.WOSO!Sched(V.Local.i).SOLine!FieldValTrim,V.Local.sData)
+			
+			F.Intrinsic.File.String2File(V.Local.sFile,V.Local.sData)
+		
+			F.Global.Callwrapper.New("GenFG","Manufacturing.CreateWorkOrderFinishedGoodPart")
+			F.Global.Callwrapper.SetProperty("GenFG","FileName",V.Local.sFile)
+			F.Global.CallWrapper.Run("GenFG")
+			F.Global.CallWrapper.GetProperty("GenFG","ReturnCode",V.Local.sRet)
+		
+		F.Intrinsic.Control.Else
+			'check if it's a bom work order
+			F.Intrinsic.String.Build("WO = '{0}'",V.DataView.WOSO!Sched(V.Local.i).WO!FieldValTrim,V.Local.sFilter)
+			F.Data.DataView.Create("WOSO$Child","Parent",22,V.Local.sFilter,"")
+			F.Intrinsic.Control.If(V.DataView.WOSO$CHILD!Parent.RowCount--,<>,-1)
+				F.Intrinsic.String.Build("Select Qty_Order From V_Job_Header Where Job = '{0}' and Suffix = '{1}'",V.DataView.WOSO!Sched(V.Local.i).WO!FieldValTrim,V.DataView.WOSO!Sched(V.Local.i).Suffix!FieldValTrim,V.Local.sSql)
+				F.ODBC.Connection!Con.OpenCompanyConnection
+				F.ODBC.Connection!Con.ExecuteAndReturn(V.Local.sSql,V.Local.sQty)
+				F.ODBC.Connection!Con.Close
+				F.Intrinsic.Control.If(V.Local.sQty.Float,<>,V.DataView.WOSO!Sched(V.Local.i).SOQty!FieldValFloat)
+					F.Data.DataView.SetSort("WOSO","Parent","Suffix")
+					'need to delete work orders and reschedule
+					F.Intrinsic.String.Format(V.DataView.WOSO!Sched(V.Local.i).SODueDate!FieldVal,"MMDDYY",V.Local.sDueDate)
+
+					F.Intrinsic.String.Format(V.DataView.WOSO!Sched(V.Local.i).SOQty!FieldVal,"#0.0000",V.Local.sQty)
+					
+					F.Global.Callwrapper.New("DelWO","Manufacturing.BOM.WorkOrderDeleteBOM")
+					F.Global.Callwrapper.SetProperty("DelWO","BeginningWorkOrder",V.DataView.WOSO!Sched(V.Local.i).WO!FieldValTrim)
+					F.Global.Callwrapper.SetProperty("DelWO","BeginningWOSuffix",V.DataView.WOSO!Sched(V.Local.i).Suffix!FieldValTrim)
+					F.Global.Callwrapper.SetProperty("DelWO","EndingWorkOrder",V.DataView.WOSO!Sched(V.Local.i).WO!FieldValTrim)
+					F.Global.Callwrapper.SetProperty("DelWO","EndingWOSuffix",V.DataView.WOSO!Sched(V.Local.i).Suffix!FieldValTrim)
+					F.Global.Callwrapper.Run("DelWO")
+					
+					F.Intrinsic.String.Format(V.DataView.WOSO!Sched(V.Local.i).SODueDate!FieldVal,"MM/DD/YYYY",V.Local.sDueDate)
+					
+					'creating wo
+					F.Intrinsic.String.Build("{0}*!*{1}*!*{2}*!*{3}*!*{4}*!* *!* *!*{5}*!*{6}",V.DataView.WOSO!Sched(V.Local.i).SOPart!FieldValTrim,"","",V.Local.sDueDate,V.DataView.WOSO!Sched(V.Local.i).SOQty!FieldVal,V.DataView.WOSO!Sched(V.Local.i).SO!FieldValTrim,V.DataView.WOSO!Sched(V.Local.i).SOLine!FieldValTrim,V.Local.sData)
+			
+					F.Intrinsic.File.String2File(V.Local.sFile,V.Local.sData)
+		
+					F.Global.Callwrapper.New("GenFG","Manufacturing.CreateWorkOrderFinishedGoodPart")
+					F.Global.Callwrapper.SetProperty("GenFG","FileName",V.Local.sFile)
+					F.Global.CallWrapper.Run("GenFG")
+					F.Global.CallWrapper.GetProperty("GenFG","ReturnCode",V.Local.sRet)
+					
+				F.Intrinsic.Control.Else
+					F.Intrinsic.Control.If(V.DataView.WOSO!Sched(V.Local.i).SOPart!FieldValTrim,=,V.DataView.WOSO!Sched(V.Local.i).WOPart!FieldValTrim)
+						F.Intrinsic.String.Format(V.DataView.WOSO!Sched(V.Local.i).SODueDate!FieldVal,"MMDDYY",V.Local.sDueDate)
+	
+						F.Intrinsic.String.Format(V.DataView.WOSO!Sched(V.Local.i).SOQty!FieldVal,"#0.0000",V.Local.sQty)
+						
+						F.Intrinsic.String.Build("Update Job_Header Set Date_Due = '{0}' Where Job = '{1}' and Suffix = '{2}'",V.Local.sDueDate,V.DataView.WOSO!Sched(V.Local.i).WO!FieldValTrim,V.DataView.WOSO!Sched(V.Local.i).Suffix!FieldValTrim,V.Local.sSql)
+						
+						F.ODBC.Connection!Con.OpenCompanyConnection
+						F.ODBC.Connection!con.Execute(V.Local.sSql)
+						F.ODBC.Connection!Con.Close
+						
+						F.Global.Callwrapper.New("Resch","Manufacturing.BOM.WorkOrderDueDateReschedule")
+						F.Global.Callwrapper.SetProperty("Resch","Quantity",V.Local.sQty)
+						F.Global.Callwrapper.SetProperty("Resch","DueDate",V.Local.sDueDate)
+						F.Global.Callwrapper.SetProperty("Resch","WorkOrder",V.DataView.WOSO!Sched(V.Local.i).WO!FieldValTrim)
+						F.Global.Callwrapper.SetProperty("Resch","WorkOrderSuffix",V.DataView.WOSO!Sched(V.Local.i).Suffix!FieldValTrim)
+						F.Global.Callwrapper.SetProperty("Resch","PartNumber",V.DataView.WOSO!Sched(V.Local.i).SOPart!FieldValTrim)
+						F.Global.Callwrapper.SetProperty("Resch","PrintReport","0")
+						F.Global.Callwrapper.Run("Resch")
+					F.Intrinsic.Control.Else
+						F.Data.DataView.SetSort("WOSO","Parent","Suffix")
+						'need to delete work orders and reschedule
+						F.Intrinsic.String.Format(V.DataView.WOSO!Sched(V.Local.i).SODueDate!FieldVal,"MMDDYY",V.Local.sDueDate)
+
+						F.Intrinsic.String.Format(V.DataView.WOSO!Sched(V.Local.i).SOQty!FieldVal,"#0.0000",V.Local.sQty)
+					
+						F.Global.Callwrapper.New("DelWO","Manufacturing.BOM.WorkOrderDeleteBOM")
+						F.Global.Callwrapper.SetProperty("DelWO","BeginningWorkOrder",V.DataView.WOSO!Sched(V.Local.i).WO!FieldValTrim)
+						F.Global.Callwrapper.SetProperty("DelWO","BeginningWOSuffix",V.DataView.WOSO!Sched(V.Local.i).Suffix!FieldValTrim)
+						F.Global.Callwrapper.SetProperty("DelWO","EndingWorkOrder",V.DataView.WOSO$Child!Parent(V.DataView.WOSO$Child!Parent.RowCount--).WO!FieldValTrim)
+						F.Global.Callwrapper.SetProperty("DelWO","EndingWOSuffix",V.DataView.WOSO$Child!Parent(V.DataView.WOSO$Child!Parent.RowCount--).Suffix!FieldValTrim)
+						F.Global.Callwrapper.Run("DelWO")
+					
+						F.Intrinsic.String.Format(V.DataView.WOSO!Sched(V.Local.i).SODueDate!FieldVal,"MM/DD/YYYY",V.Local.sDueDate)
+					
+						'creating wo
+						F.Intrinsic.String.Build("{0}*!*{1}*!*{2}*!*{3}*!*{4}*!* *!* *!*{5}*!*{6}",V.DataView.WOSO!Sched(V.Local.i).SOPart!FieldValTrim,"","",V.Local.sDueDate,V.DataView.WOSO!Sched(V.Local.i).SOQty!FieldVal,V.DataView.WOSO!Sched(V.Local.i).SO!FieldValTrim,V.DataView.WOSO!Sched(V.Local.i).SOLine!FieldValTrim,V.Local.sData)
+			
+						F.Intrinsic.File.String2File(V.Local.sFile,V.Local.sData)
+		
+						F.Global.Callwrapper.New("GenFG","Manufacturing.CreateWorkOrderFinishedGoodPart")
+						F.Global.Callwrapper.SetProperty("GenFG","FileName",V.Local.sFile)
+						F.Global.CallWrapper.Run("GenFG")
+						F.Global.CallWrapper.GetProperty("GenFG","ReturnCode",V.Local.sRet)
+					F.Intrinsic.Control.EndIf
+				F.Intrinsic.Control.EndIf
+
+			F.Intrinsic.Control.Else
+				F.Intrinsic.String.Build("Select Qty_Order From V_Job_Header Where Job = '{0}' and Suffix = '{1}'",V.DataView.WOSO!Sched(V.Local.i).WO!FieldValTrim,V.DataView.WOSO!Sched(V.Local.i).Suffix!FieldValTrim,V.Local.sSql)
+				F.ODBC.Connection!Con.OpenCompanyConnection
+				F.ODBC.Connection!Con.ExecuteAndReturn(V.Local.sSql,V.Local.sQty)
+				F.ODBC.Connection!Con.Close
+				F.Intrinsic.Control.If(V.Local.sQty.Float,<>,V.DataView.WOSO!Sched(V.Local.i).SOQty!FieldValFloat)
+					F.Intrinsic.String.Format(V.DataView.WOSO!Sched(V.Local.i).SODueDate!FieldVal,"MMDDYY",V.Local.sDueDate)
+
+					F.Intrinsic.String.Format(V.DataView.WOSO!Sched(V.Local.i).SOQty!FieldVal,"#0.0000",V.Local.sQty)
+					
+					F.Global.Callwrapper.New("DelWO","Manufacturing.BOM.WorkOrderDeleteBOM")
+					F.Global.Callwrapper.SetProperty("DelWO","BeginningWorkOrder",V.DataView.WOSO!Sched(V.Local.i).WO!FieldValTrim)
+					F.Global.Callwrapper.SetProperty("DelWO","BeginningWOSuffix",V.DataView.WOSO!Sched(V.Local.i).Suffix!FieldValTrim)
+					F.Global.Callwrapper.SetProperty("DelWO","EndingWorkOrder",V.DataView.WOSO!Sched(V.Local.i).WO!FieldValTrim)
+					F.Global.Callwrapper.SetProperty("DelWO","EndingWOSuffix",V.DataView.WOSO!Sched(V.Local.i).Suffix!FieldValTrim)
+					F.Global.Callwrapper.Run("DelWO")
+					
+					'creating wo
+					F.Intrinsic.String.Build("{0}*!*{1}*!*{2}*!*{3}*!*{4}*!* *!* *!*{5}*!*{6}",V.DataView.WOSO!Sched(V.Local.i).SOPart!FieldValTrim,"","",V.Local.sDueDate,V.DataView.WOSO!Sched(V.Local.i).SOQty!FieldVal,V.DataView.WOSO!Sched(V.Local.i).SO!FieldValTrim,V.DataView.WOSO!Sched(V.Local.i).SOLine!FieldValTrim,V.Local.sData)
+			
+					F.Intrinsic.File.String2File(V.Local.sFile,V.Local.sData)
+		
+					F.Global.Callwrapper.New("GenFG","Manufacturing.CreateWorkOrderFinishedGoodPart")
+					F.Global.Callwrapper.SetProperty("GenFG","FileName",V.Local.sFile)
+					F.Global.CallWrapper.Run("GenFG")
+					F.Global.CallWrapper.GetProperty("GenFG","ReturnCode",V.Local.sRet)
+					
+				F.Intrinsic.Control.Else
+					F.Intrinsic.Control.If(V.DataView.WOSO!Sched(V.Local.i).SOPart!FieldValTrim,=,V.DataView.WOSO!Sched(V.Local.i).WOPart!FieldValTrim)
+						F.Intrinsic.String.Format(V.DataView.WOSO!Sched(V.Local.i).SODueDate!FieldVal,"MMDDYY",V.Local.sDueDate)
+						F.Intrinsic.String.Build("Update Job_Header Set Date_Due = '{0}' Where Job = '{1}' and Suffix = '{2}'",V.Local.sDueDate,V.DataView.WOSO!Sched(V.Local.i).WO!FieldValTrim,V.DataView.WOSO!Sched(V.Local.i).Suffix!FieldValTrim,V.Local.sSql)
+					
+						F.ODBC.Connection!Con.OpenCompanyConnection
+						F.ODBC.Connection!con.Execute(V.Local.sSql)
+						F.ODBC.Connection!Con.Close
+					
+						F.Intrinsic.String.Format(V.DataView.WOSO!Sched(V.Local.i).SODueDate!FieldVal,"MM/DD/YYYY",V.Local.sDueDate)
+						F.Global.APS.ScheduleJob(V.DataView.WOSO!Sched(V.Local.i).WO!FieldValTrim,V.DataView.WOSO!Sched(V.Local.i).Suffix!FieldValTrim,"B",V.Local.sDueDate)
+					F.Intrinsic.Control.Else
+						F.Data.DataView.SetSort("WOSO","Parent","Suffix")
+						'need to delete work orders and reschedule
+						F.Intrinsic.String.Format(V.DataView.WOSO!Sched(V.Local.i).SODueDate!FieldVal,"MMDDYY",V.Local.sDueDate)
+
+						F.Intrinsic.String.Format(V.DataView.WOSO!Sched(V.Local.i).SOQty!FieldVal,"#0.0000",V.Local.sQty)
+					
+						F.Global.Callwrapper.New("DelWO","Manufacturing.BOM.WorkOrderDeleteBOM")
+						F.Global.Callwrapper.SetProperty("DelWO","BeginningWorkOrder",V.DataView.WOSO!Sched(V.Local.i).WO!FieldValTrim)
+						F.Global.Callwrapper.SetProperty("DelWO","BeginningWOSuffix",V.DataView.WOSO!Sched(V.Local.i).Suffix!FieldValTrim)
+						F.Global.Callwrapper.SetProperty("DelWO","EndingWorkOrder",V.DataView.WOSO!Sched(V.Local.i).WO!FieldValTrim)
+						F.Global.Callwrapper.SetProperty("DelWO","EndingWOSuffix",V.DataView.WOSO!Sched(V.Local.i).Suffix!FieldValTrim)
+						F.Global.Callwrapper.Run("DelWO")
+					
+						F.Intrinsic.String.Format(V.DataView.WOSO!Sched(V.Local.i).SODueDate!FieldVal,"MM/DD/YYYY",V.Local.sDueDate)
+					
+						'creating wo
+						F.Intrinsic.String.Build("{0}*!*{1}*!*{2}*!*{3}*!*{4}*!* *!* *!*{5}*!*{6}",V.DataView.WOSO!Sched(V.Local.i).SOPart!FieldValTrim,"","",V.Local.sDueDate,V.DataView.WOSO!Sched(V.Local.i).SOQty!FieldVal,V.DataView.WOSO!Sched(V.Local.i).SO!FieldValTrim,V.DataView.WOSO!Sched(V.Local.i).SOLine!FieldValTrim,V.Local.sData)
+			
+						F.Intrinsic.File.String2File(V.Local.sFile,V.Local.sData)
+		
+						F.Global.Callwrapper.New("GenFG","Manufacturing.CreateWorkOrderFinishedGoodPart")
+						F.Global.Callwrapper.SetProperty("GenFG","FileName",V.Local.sFile)
+						F.Global.CallWrapper.Run("GenFG")
+						F.Global.CallWrapper.GetProperty("GenFG","ReturnCode",V.Local.sRet)
+					F.Intrinsic.Control.EndIf
+				F.Intrinsic.Control.EndIf
+			F.Intrinsic.Control.EndIf
+			F.Data.DataView.Close("WOSO$CHILD","Parent")
+		F.Intrinsic.Control.EndIf
+	F.Intrinsic.Control.Next(V.Local.i)
+	
+	F.Data.DataView.Close("WOSO","Sched")
+	
+	F.Intrinsic.Control.CallSub(Get_Data)
+	
+	Gui.FormWOSOResch..Enabled(True)
+	Gui.FormWOSOResch..AlwaysOnTop(True)
+	Gui.FormWOSOResch..AlwaysOnTop(False)
+	
+	F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+		F.Intrinsic.String.Build("Project: {0}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}","GCG_5440_WOSO_Resheduling.g2u",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+		F.Intrinsic.UI.Msgbox(V.Local.sError)
+		F.Intrinsic.Control.CallSub(FormWOSOResch_UnLoad)
+	F.Intrinsic.Control.EndIf
+Function.Intrinsic.Control.EndTry
+Program.Sub.cmdUpDate_Click.End
+
+Program.Sub.cmdRefresh_Click.Start
+F.Intrinsic.Control.Try
+	V.Local.sError.Declare(String,"")
+	
+	F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+		F.Intrinsic.String.Build("Project: {0}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}","GCG_5440_WOSO_Resheduling.g2u",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+		F.Intrinsic.UI.Msgbox(V.Local.sError)
+		F.Intrinsic.Control.CallSub(FormWOSOResch_UnLoad)
+	F.Intrinsic.Control.EndIf
+Function.Intrinsic.Control.EndTry
+Program.Sub.cmdRefresh_Click.End
+
+Program.Sub.GsGridControlWOSO_RowCellClick.Start
+F.Intrinsic.Control.Try
+	V.Local.sError.Declare(String,"")
+	V.Local.sGrid.Declare(String,"")
+	V.Local.sParam.Declare(String,"")
+	V.Local.sLocal.Declare(String,"")
+	V.Local.sDate.Declare(String,"")
+	V.Local.sData.Declare(String,"")
+	V.Local.sDueDate.Declare(String,"")
+	
+	F.Intrinsic.Control.SelectCase(V.Args.Column.UCase)
+		F.Intrinsic.Control.Case("CHECK_BOX")
+			Gui.FormWOSOResch.GsGridControlWOSO.GetFocusedGridview(V.Local.sGrid)
+			F.Intrinsic.Control.If(V.Local.sGrid.UCase,=,"WOSO")
+				F.Intrinsic.Control.If(V.DataTable.WOSO(V.Args.RowIndex).Activity!FieldValTrim,=,"N")
+					F.Data.DataTable.SetValue("WOSO",V.Args.RowIndex,"CHECK_BOX",V.DataTable.WOSO(V.Args.RowIndex).Check_Box!FieldValNot)
+				F.Intrinsic.Control.EndIf
+			F.Intrinsic.Control.EndIf
+			
+		F.Intrinsic.Control.Case("WORK_ORDER")
+			Gui.FormWOSOResch.GsGridControlWOSO.GetFocusedGridview(V.Local.sGrid)
+			F.Intrinsic.Control.If(V.Local.sGrid.UCase,=,"WOSO")
+				F.Intrinsic.Control.If(V.DataTable.WOSO(V.Args.RowIndex).WO!FieldValTrim,<>,"")
+					F.Intrinsic.String.Build("7!*!{0}!*!{1}!*!A",V.DataTable.WOSO(V.Args.RowIndex).WO!FieldValTrim,V.DataTable.WOSO(V.Args.RowIndex).Suffix!FieldValTrim,V.Local.sParam)
+					F.Global.General.CallWrapperAsync(450000,V.Local.sParam)
+				F.Intrinsic.Control.EndIf
+			F.Intrinsic.Control.Else
+				F.Intrinsic.Control.If(V.DataTable.WOSO$CHILD(V.Args.RowIndex).WO!FieldValTrim,<>,"")
+					F.Intrinsic.String.Build("7!*!{0}!*!{1}!*!A",V.DataTable.WOSO$CHILD(V.Args.RowIndex).WO!FieldValTrim,V.DataTable.WOSO$CHILD(V.Args.RowIndex).Suffix!FieldValTrim,V.Local.sParam)
+					F.Global.General.CallWrapperAsync(450000,V.Local.sParam)
+				F.Intrinsic.Control.EndIf
+			F.Intrinsic.Control.EndIf
+		
+	F.Intrinsic.Control.EndSelect
+	
+	F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+		F.Intrinsic.String.Build("Project: {0}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}","GCG_5440_WOSO_Resheduling.g2u",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+		F.Intrinsic.UI.Msgbox(V.Local.sError)
+		F.Intrinsic.Control.CallSub(FormWOSOResch_UnLoad)
+	F.Intrinsic.Control.EndIf
+Function.Intrinsic.Control.EndTry
+Program.Sub.GsGridControlWOSO_RowCellClick.End
+
+Program.Sub.Get_Data.Start
+F.Intrinsic.Control.Try
+	V.Local.sError.Declare(String,"")
+	
+	F.ODBC.Connection!Con.OpenCompanyConnection(999)
+	
+	F.Intrinsic.UI.InvokeWaitDialog("Getting Sales Order/ Work Order Data..................")
+	F.Data.DataTable.CreateFromSQL("WOSOTemp","con","Select '' as Empty, Cast(0 as Bit) as Check_Box, A.Order_NO + A.Record_No as SL, A.Order_No As SO, Left(A.Record_No,3) As SOLine, A.Part As SOPart, A.Qty_Ordered As SOQty, Case A.Flag_Use_Mqd When 'Y' Then E.Cust_Due_Date Else A.Date_Item_Prom End As SODueDate, '' as Activity, Cast(0  As Bit) As WOClsd From V_Order_Lines A Left Join V_OE_Ship_Sched E On A.Order_No = E.Order_No And A.Record_No = E.Order_Line And E.Flag_Closed <> 'Y' Where A.Order_NO + A.Record_No Not In(Select F.Order_NO + F.Order_Line From V_Order_To_WO F) ",True)
+	F.Data.DataTable.CreateFromSQL("Temp","con","Select '' as Empty, Cast(0 as Bit) as Check_Box, F.Order_NO + F.Order_Line + G.Job+IF(G.Suffix is Null or G.Suffix = '',rtrim(G.Suffix),G.Suffix) as SL, F.Order_No As SO, Left(F.Order_Line,3) As SOLine,G.Job+IF(G.Suffix is Null or G.Suffix = '',rtrim(G.Suffix),'-'+G.Suffix) as Work_Order, G.Job As WO, G.Suffix, IF(PARENT_WO is Null or Parent_WO = '',G.Job,Parent_WO) as Parent_WO, G.Part as WOPart, G.Qty_Order As WOQty, Cast(Case G.Date_Closed When '1900-01-01' Then 0 Else 1 End As Bit) As WOClsd, Case G.Date_Due When '1900-01-01' Then Null Else G.Date_Due End As WODueDate From V_Order_To_WO F Join V_Job_Header G On F.Job = G.Job And F.Suffix = G.Suffix",True)
+	
+	F.Data.DataTable.SetPK("WOSOTEMP","SL")
+	F.Data.DataTable.SetPK("Temp","SL")
+
+	F.Data.DataTable.Merge("TEMP","WOSOTEMP",False,1)
+	F.Data.DataTable.Close("Temp")
+	F.Data.DataTable.DeleteRow("WOSO$CHILD")
+	F.Data.DataTable.AcceptChanges("WOSO$CHILD")
+	F.Data.DataTable.DeleteRow("WOSO")
+	F.Data.DataTable.AcceptChanges("WOSO")
+
+	F.Data.DataTable.Merge("WOSOTemp","WOSO",False,1)
+	
+	F.Data.DataTable.Close("WOSOTEMP")
+	
+	F.Data.DataTable.CreateFromSQL("WOCHILDTEMP","con","Select Cast(0 as Bit) as Check_Box, Job+IF(Suffix is Null or Suffix = '',rtrim(Suffix),'-'+Suffix) as Work_Order, Job as WO, Suffix,IF(PARENT_WO is Null or Parent_WO = '',Job,Parent_WO) as Parent_WO,IF(Parent_Suffix_Parent is null or Parent_Suffix_Parent = '',Suffix,Parent_Suffix_Parent) as Parent_Suffix_Parent, (Select Case Date_Due When '1900-01-01' Then Null Else Date_Due End As WODueDate From V_Job_Header where A.Job = Job and A.Parent_Suffix_Parent = Suffix) as WODueDate, Qty_Order as WOQty, Cast(Case Date_Closed When '1900-01-01' Then 0 Else 1 End As Bit) As WOClsd, Part, '' as Activity, (Select Order_No From V_ORDER_TO_WO Where A.Parent_WO = Job and A.Suffix = Suffix) as SO, (Select Left(Order_Line,3) From V_ORDER_TO_WO Where A.Parent_WO = Job and A.Parent_Suffix_Parent = Suffix) as SOLine From V_Job_Header A Where Job In(Select Job From V_Order_To_WO Where Job = A.Parent_WO and Suffix = A.Parent_Suffix_Parent)")
+	
+	F.Data.Dictionary.CreateFromSQL("Order","con","Select Job, Order_No as SO From V_Order_To_WO")
+	F.Data.Dictionary.SetDefaultReturn("Order"," ")
+	F.Data.DataTable.FillFromDictionary("WOCHILDTemp","Order","Wo","SO")
+
+	F.Data.Dictionary.Close("Order")
+	
+	F.Data.Dictionary.CreateFromSQL("Line","con","Select Job, Left(Order_Line,3) as SOLine From V_Order_To_WO")
+	F.Data.Dictionary.SetDefaultReturn("Line"," ")
+	F.Data.DataTable.FillFromDictionary("WOCHILDTemp","Line","Wo","SOLine")
+	F.Data.Dictionary.Close("Line")
+	
+	F.Data.DataTable.Merge("WOCHILDTemp","WOSO$CHILD",False,1)
+
+	F.Data.DataTable.Close("WOCHILDTEMP")
+	
+	F.Data.Dictionary.CreateFromSQL("ActivityH","Con","Select Distinct A.Job, (Select IF(Count(Job) = 0,'N','Y') From V_Job_Detail Where Job = A.Job) as Activity From V_Job_Header as A")
+	F.Data.Dictionary.SetDefaultReturn("ActivityH","N")
+	F.Data.Dictionary.CreateFromSQL("ActivityC","Con","Select A.Job+IF(A.Suffix is Null or A.Suffix = '',rtrim(A.Suffix),'-'+A.Suffix) as Work_Order, (Select IF(Count(Job) = 0,'N','Y') From V_Job_Detail Where Job = A.Job and Suffix = A.Suffix) as Activity From V_Job_Header as A")
+	F.Data.Dictionary.SetDefaultReturn("ActivityC","N")
+	F.Data.DataTable.FillFromDictionary("WOSO","ActivityH","WO","Activity")
+	F.Data.DataTable.FillFromDictionary("WOSO$CHILD","ActivityC","Work_Order","Activity")
+	F.Data.Dictionary.Close("ActivityC")
+	F.Data.Dictionary.Close("ActivityH")
+	
+	F.Intrinsic.UI.CloseWaitDialog
+	
+	F.ODBC.Connection!Con.Close
+
+	F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+		F.Intrinsic.String.Build("Project: {0}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}","GCG_5440_WOSO_Resheduling.g2u",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+		F.Intrinsic.UI.Msgbox(V.Local.sError)
+		F.Intrinsic.Control.CallSub(FormWOSOResch_UnLoad)
+	F.Intrinsic.Control.EndIf
+Function.Intrinsic.Control.EndTry
+Program.Sub.Get_Data.End
+
+Program.Sub.Set_Properties.Start
+F.Intrinsic.Control.Try
+	V.Local.sError.Declare(String,"")
+	V.Local.sRet.Declare(String,"")
+	
+	Gui.FormWOSOResch.txt1.TabStop(False)
+	Gui.FormWOSOResch.txt2.TabStop(False)
+	Gui.FormWOSOResch.txt3.TabStop(False)
+	Gui.FormWOSOResch.txt4.TabStop(False)
+	Gui.FormWOSOResch.txt5.TabStop(False)
+	Gui.FormWOSOResch.txt6.TabStop(False)
+	
+	Gui.FormWOSOResch.GsGridControlWOSO.AddGridviewFromDataview("WOSO","WOSO","VWOSO")
+	
+	Gui.FormWOSOResch.GsGridControlWOSO.SetGridviewProperty("WOSO","Editable",False)
+	Gui.FormWOSOResch.GsGridControlWOSO.SetGridviewProperty("WOSO","ReadOnly",True)
+	
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSO","Empty","Caption"," ")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSO","Empty","HeaderBackColor","Green")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSO","Empty","HeaderForeColor","White")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSO","Empty","MaxWidth","1")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSO","Empty","Fixed","Left")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSO","Check_Box","Caption","Check Box")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSO","Check_Box","HeaderBackColor","Green")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSO","Check_Box","HeaderForeColor","White")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSO","Check_Box","MaxWidth","60")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSO","WO","Caption","WO")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSO","WO","HeaderBackColor","Green")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSO","WO","HeaderForeColor","White")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSO","WO","Visible",False)
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSO","Work_Order","Caption","Work Order")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSO","Work_Order","HeaderBackColor","Green")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSO","Work_Order","HeaderForeColor","White")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSO","Work_Order","CellFontUnderline",True)
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSO","Work_Order","CellForeColor","Blue")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSO","Suffix","Caption","Suffix")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSO","Suffix","HeaderBackColor","Green")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSO","Suffix","HeaderForeColor","White")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSO","Suffix","MaxWidth","50")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSO","Suffix","Visible",False)
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSO","Parent_WO","Caption","Parent WO")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSO","Parent_WO","HeaderBackColor","Green")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSO","Parent_WO","HeaderForeColor","White")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSO","Parent_WO","Visible",False)
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSO","WOPart","Caption","WO Part")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSO","WOPart","HeaderBackColor","Green")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSO","WOPart","HeaderForeColor","White")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSO","WOPart","MinWidth","150")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSO","WOQty","Caption","WO Qty")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSO","WOQty","HeaderBackColor","Green")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSO","WOQty","HeaderForeColor","White")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSO","WODueDate","Caption","WO DueDate")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSO","WODueDate","HeaderBackColor","Green")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSO","WODueDate","HeaderForeColor","White")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSO","WODueDate","DisplayCustomDatetime","d")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSO","WOClsd","Caption","Clsd")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSO","WOClsd","HeaderBackColor","Green")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSO","WOClsd","HeaderForeColor","White")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSO","WOClsd","MaxWidth","50")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSO","SO","Caption","SO")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSO","SO","HeaderBackColor","Green")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSO","SO","HeaderForeColor","White")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSO","SOLine","Caption","Line")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSO","SOLine","HeaderBackColor","Green")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSO","SOLine","HeaderForeColor","White")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSO","SOLine","MaxWidth","50")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSO","SOPart","Caption","SO Part")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSO","SOPart","HeaderBackColor","Green")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSO","SOPart","HeaderForeColor","White")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSO","SOPart","MinWidth","150")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSO","SOQty","Caption","SO Qty")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSO","SOQty","HeaderBackColor","Green")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSO","SOQty","HeaderForeColor","White")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSO","SODueDate","Caption","SO DueDate")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSO","SODueDate","HeaderBackColor","Green")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSO","SODueDate","HeaderForeColor","White")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSO","SODueDate","DisplayCustomDatetime","d")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSO","Activity","Caption","Activity")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSO","Activity","HeaderBackColor","Green")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSO","Activity","HeaderForeColor","White")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSO","Activity","MaxWidth","50")
+	
+	Gui.FormWOSOResch.GsGridControlWOSO.AddStyleFormatCondition("WOSO","Work_Order","ParentGreen","Expression","[Work_Order] <> ''")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetStyleFormatConditionProperty("WOSO","Work_Order","ParentGreen","BackColor","LightGreen")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetStyleFormatConditionProperty("WOSO","Work_Order","ParentGreen","ApplyToRow",True)
+	
+	Gui.FormWOSOResch.GsGridControlWOSO.AddStyleFormatCondition("WOSO","Work_Order","ParentWhite","Expression","[Work_Order] is null")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetStyleFormatConditionProperty("WOSO","Work_Order","ParentWhite","BackColor","White")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetStyleFormatConditionProperty("WOSO","Work_Order","ParentWhite","ApplyToRow",True)
+	
+	V.Local.sRet.Set("isNull([WODueDate],'1/1/1900') <> '1/1/1900' and [SOPart] <> [WOPart]")
+	Gui.FormWOSOResch.GsGridControlWOSO.AddStyleFormatCondition("WOSO","Work_Order","ParentYellow","Expression",V.Local.sRet)
+	Gui.FormWOSOResch.GsGridControlWOSO.SetStyleFormatConditionProperty("WOSO","Work_Order","ParentYellow","BackColor","Yellow")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetStyleFormatConditionProperty("WOSO","Work_Order","ParentYellow","ApplyToRow",True)
+	
+	V.Local.sRet.Set("isNull([WODueDate],'1/1/1900') <> '1/1/1900' and [WODueDate] <> [SODueDate]")
+	Gui.FormWOSOResch.GsGridControlWOSO.AddStyleFormatCondition("WOSO","Work_Order","ParentPlum","Expression",V.Local.sRet)
+	Gui.FormWOSOResch.GsGridControlWOSO.SetStyleFormatConditionProperty("WOSO","Work_Order","ParentPlum","BackColor","Plum")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetStyleFormatConditionProperty("WOSO","Work_Order","ParentPlum","ApplyToRow",True)
+	
+	V.Local.sRet.Set("isNull([WODueDate],'1/1/1900') <> '1/1/1900' and [WOQty] <> [SOQty]")
+	Gui.FormWOSOResch.GsGridControlWOSO.AddStyleFormatCondition("WOSO","Work_Order","ParentPink","Expression",V.Local.sRet)
+	Gui.FormWOSOResch.GsGridControlWOSO.SetStyleFormatConditionProperty("WOSO","Work_Order","ParentPink","BackColor","LightPink")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetStyleFormatConditionProperty("WOSO","Work_Order","ParentPink","ApplyToRow",True)
+	
+	V.Local.sRet.Set("isNull([WODueDate],'1/1/1900') <> '1/1/1900' and (([WOQty] <> [SOQty] and [WODueDate] <> [SODueDate]) OR ([WOQty] <> [SOQty] and [SOPart] <> [WOPart]) OR ([WODueDate] <> [SODueDate] and [SOPart] <> [WOPart]))")
+	Gui.FormWOSOResch.GsGridControlWOSO.AddStyleFormatCondition("WOSO","Work_Order","ParentRed","Expression",V.Local.sRet)
+	Gui.FormWOSOResch.GsGridControlWOSO.SetStyleFormatConditionProperty("WOSO","Work_Order","ParentRed","BackColor","Red")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetStyleFormatConditionProperty("WOSO","Work_Order","ParentRed","ApplyToRow",True)
+	
+	Gui.FormWOSOResch.GsGridControlWOSO.AddGridviewFromDataview("WOSOChild","WOSO","VChild")
+	
+	Gui.FormWOSOResch.GsGridControlWOSO.SetGridviewProperty("WOSOChild","Editable",False)
+	Gui.FormWOSOResch.GsGridControlWOSO.SetGridviewProperty("WOSOChild","ReadOnly",True)
+	
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSOChild","Empty","Caption"," ")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSOChild","Empty","HeaderBackColor","Green")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSOChild","Empty","HeaderForeColor","White")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSOChild","Empty","MaxWidth","1")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSOChild","Empty","Fixed","Left")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSOChild","Check_Box","Caption","Check Box")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSOChild","Check_Box","HeaderBackColor","Green")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSOChild","Check_Box","HeaderForeColor","White")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSOChild","Check_Box","MaxWidth","30")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSOChild","CHECK_BOX","Visible",False)
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSOChild","WO","Caption","WO")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSOChild","WO","HeaderBackColor","Green")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSOChild","WO","HeaderForeColor","White")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSOChild","WO","Visible",False)
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSOChild","Work_Order","Caption","Work Order")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSOChild","Work_Order","HeaderBackColor","Green")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSOChild","Work_Order","HeaderForeColor","White")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSOChild","Work_Order","CellFontUnderline",True)
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSOChild","Work_Order","CellForeColor","Blue")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSOChild","Suffix","Caption","Suffix")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSOChild","Suffix","HeaderBackColor","Green")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSOChild","Suffix","HeaderForeColor","White")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSOChild","Suffix","MaxWidth","50")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSOChild","Suffix","Visible",False)
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSOChild","Parent_WO","Caption","Parent WO")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSOChild","Parent_WO","HeaderBackColor","Green")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSOChild","Parent_WO","HeaderForeColor","White")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSOChild","Parent_WO","Visible",False)
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSOChild","Parent_Suffix_Parent","Caption","Parent Suffix Parent")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSOChild","Parent_Suffix_Parent","HeaderBackColor","Green")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSOChild","Parent_Suffix_Parent","HeaderForeColor","White")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSOChild","Parent_Suffix_Parent","Visible",False)
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSOChild","WOQty","Caption","WO Qty")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSOChild","WOQty","HeaderBackColor","Green")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSOChild","WOQty","HeaderForeColor","White")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSOChild","WODueDate","Caption","WO DueDate")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSOChild","WODueDate","HeaderBackColor","Green")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSOChild","WODueDate","HeaderForeColor","White")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSOChild","WODueDate","DisplayCustomDatetime","d")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSOChild","WOClsd","Caption","Clsd")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSOChild","WOClsd","HeaderBackColor","Green")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSOChild","WOClsd","HeaderForeColor","White")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSOChild","WOClsd","MaxWidth","50")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSOChild","Part","Caption","Part")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSOChild","Part","HeaderBackColor","Green")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSOChild","Part","HeaderForeColor","White")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSOChild","Part","MinWidth","180")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSOChild","Activity","Caption","Activity")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSOChild","Activity","HeaderBackColor","Green")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSOChild","Activity","HeaderForeColor","White")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSOChild","SO","Caption","SO")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSOChild","SO","HeaderBackColor","Green")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSOChild","SO","HeaderForeColor","White")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSOChild","SO","Visible",False)
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSOChild","SOLine","Caption","Line")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSOChild","SOLine","HeaderBackColor","Green")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSOChild","SOLine","HeaderForeColor","White")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSOChild","SOLine","Visible",False)
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSOChild","SOLine","MaxWidth","50")
+	Gui.FormWOSOResch.GsGridControlWOSO.SetColumnProperty("WOSOChild","Activity","MaxWidth","50")
+	
+	Gui.FormWOSOResch.GsGridControlWOSO.MainView("WOSO")
+	
+	F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+		F.Intrinsic.String.Build("Project: {0}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}","GCG_5440_WOSO_Resheduling.g2u",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+		F.Intrinsic.UI.Msgbox(V.Local.sError)
+		F.Intrinsic.Control.CallSub(FormWOSOResch_UnLoad)
+	F.Intrinsic.Control.EndIf
+Function.Intrinsic.Control.EndTry
+Program.Sub.Set_Properties.End
+
+Program.Sub.Build_Empty_DT.Start
+F.Intrinsic.Control.Try
+	V.Local.sError.Declare(String,"")
+	
+	F.ODBC.Connection!Con.OpenCompanyConnection
+	
+	F.Data.DataTable.CreateFromSQL("WOSO","con","Select '' as Empty, Cast(0 as Bit) as Check_Box, G.Job+IF(G.Suffix is Null or G.Suffix = '',G.Suffix,'-'+G.Suffix) as Work_Order, G.Job As WO, G.Suffix, Parent_WO, G.Part as WOPart, G.Qty_Order As WOQty, Case G.Date_Due When '1900-01-01' Then Null Else G.Date_Due End As WODueDate, Cast(Case G.Date_Closed When '1900-01-01' Then 0 Else 1 End As Bit) As WOClsd, A.Order_No As SO, Left(A.Record_No,3) As SOLine, A.Part As SOPart, A.Qty_Ordered As SOQty, Case A.Flag_Use_Mqd When 'Y' Then E.Cust_Due_Date Else A.Date_Item_Prom End As SODueDate, '' as Activity From V_Order_Lines A Left Join V_Customer_Master B On A.Customer = B.Customer Left Join V_OE_Ship_Sched E On A.Order_No = E.Order_No And A.Record_No = E.Order_Line And E.Flag_Closed <> 'Y' Left Join V_Order_To_WO F On A.Order_No = F.Order_No And A.Record_No = F.Order_Line Left Join V_Job_Header G On F.Job = G.Job And F.Suffix = G.Suffix Where A.Order_No = '-1'",True)
+	F.Data.DataTable.CreateFromSQL("WOSO$CHILD","con","Select '' as Empty, Cast(0 as Bit) as Check_Box, Job+IF(Suffix is Null or Suffix = '',Suffix,'-'+Suffix) as Work_Order, Job As WO, Suffix,Parent_WO,Parent_Suffix_Parent, Case Date_Due When '1900-01-01' Then Null Else Date_Due End As WODueDate, Qty_Order as WOQty, Cast(Case Date_Closed When '1900-01-01' Then 0 Else 1 End As Bit) As WOClsd, Part, '' as Activity, '' as SO, '' as SOLine From V_Job_Header A Where Parent_WO = '-1'",True)
+	
+	F.Data.DataView.Create("WOSO","VWOSO")
+	F.Data.DataView.Create("WOSO$Child","VChild")
+	
+	F.Data.DataTable.AddRelation("WOSO","Parent_WO*!*SUFFIX*!*SO*!*SOLINE","WOSO$CHILD","WO*!*Parent_Suffix_Parent*!*SO*!*SOLINE")
+	
+	F.ODBC.Connection!Con.Close
+	
+	F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+		F.Intrinsic.String.Build("Project: {0}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}","GCG_5440_WOSO_Resheduling.g2u",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+		F.Intrinsic.UI.Msgbox(V.Local.sError)
+		F.Intrinsic.Control.CallSub(FormWOSOResch_UnLoad)
+	F.Intrinsic.Control.EndIf
+Function.Intrinsic.Control.EndTry
+Program.Sub.Build_Empty_DT.End
